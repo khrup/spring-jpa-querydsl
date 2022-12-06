@@ -12,7 +12,7 @@ import java.util.List;
 @Entity
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-@NoArgsConstructor //JPA에서는 protected 까지 열려있음, private 쓰면 에러남
+@NoArgsConstructor(access = AccessLevel.PROTECTED) //JPA에서는 protected 까지 열려있음, private 쓰면 에러남
 public class Team {
 
     @ToString.Include
