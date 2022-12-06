@@ -14,6 +14,7 @@ import study.querydsl.entity.Team;
 import javax.persistence.EntityManager;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static study.querydsl.entity.QMember.*;
 
 @SpringBootTest
 @Transactional
@@ -64,10 +65,12 @@ public class QueryDslBasicTest {
     @Test
     public void startQueryDsl() {
 
-        QMember m = QMember.member;
-        Member findMember = queryFactory.select(m)
-                .from(m)
-                .where(m.username.eq("member1")) //파라미터 바인딩 처리
+        QMember member1 = new QMember("member~~~"); //해당 방법은 같은 테이블을 조인할때 사용한다.
+
+        Member findMember = queryFactory
+                .select(member)
+                .from(member)
+                .where(member.username.eq("member1")) //파라미터 바인딩 처리
                 .fetchOne();
 
         assertEquals("member1", findMember.getUsername());
