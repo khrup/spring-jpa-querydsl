@@ -89,4 +89,61 @@ public class QueryDslBasicTest {
         int size = findMemberList.size();
     }
 
+    /**
+     * 회원 정렬 순서
+     * 1. 회원 나이 내림차순(desc)
+     * 2. 회원 이름 오름차순(asc)
+     * 단 2에서 회원이름이 없으면 마지막에 출력 (nulls last : null 은 마지막에 출력)
+     */
+    @Test
+    public void sort() {
+
+        em.persist(new Member(null, 100));
+        em.persist(new Member("member5", 100));
+        em.persist(new Member("member6", 100));
+        em.persist(new Member("member7", 100));
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .where(member.age.eq(100))
+                .orderBy(member.age.desc(), member.username.asc().nullsLast())
+                .fetch();
+
+        assertEquals("member5", result.get(0).getUsername());
+        assertEquals("member6", result.get(1).getUsername());
+        assertEquals("member7", result.get(2).getUsername());
+        assertNull(result.get(3).getUsername());
+    }
+
+    @Test
+    public void paging1() {
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .orderBy(member.username.desc())
+                .offset(1) //0부터 시작
+                .limit(2) //몇개 가져올 것인지
+                .fetch();
+
+        assertEquals(2, result.size());
+    }
+
+    @Test
+    public void paging2() {
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .orderBy(member.username.desc())
+                .offset(1) //0부터 시작
+                .limit(2) //몇개 가져올 것인지
+                .fetch();
+
+        //카운트쿼리는 별도로 작성하는것이 성능상 더 좋음
+        int totalCount = queryFactory
+                .selectFrom(member)
+                .fetch().size();
+
+        assertEquals(2, result.size());
+        assertEquals(4, totalCount);
+    }
+
+
 }
