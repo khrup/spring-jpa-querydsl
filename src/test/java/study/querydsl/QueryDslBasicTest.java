@@ -13,6 +13,8 @@ import study.querydsl.entity.Team;
 
 import javax.persistence.EntityManager;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static study.querydsl.entity.QMember.*;
 
@@ -74,6 +76,17 @@ public class QueryDslBasicTest {
                 .fetchOne();
 
         assertEquals("member1", findMember.getUsername());
+    }
+
+    @Test
+    public void resultFetch() {
+
+        Member findMember = queryFactory.selectFrom(member).fetchOne();
+
+        List<Member> findMemberList = queryFactory.selectFrom(member).fetch();
+
+//        Member findMemberOne = queryFactory.selectFrom(member).fetchFirst();
+        int size = findMemberList.size();
     }
 
 }
