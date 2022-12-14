@@ -12,7 +12,7 @@ spring:
       hibernate:
         #show_sql: true # System out 이라서 아래 로그를 사용
         format_sql: true
-#        use_sql_comments: true #JPQL 쿼리 볼수있음
+        use_sql_comments: true #JPQL 쿼리 볼수있음
 
 logging.level:
   org.hibernate.SQL: debug #logger로 실행됨
