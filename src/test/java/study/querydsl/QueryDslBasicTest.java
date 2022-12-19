@@ -1,5 +1,6 @@
 package study.querydsl;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
@@ -523,6 +524,7 @@ public class QueryDslBasicTest {
             System.out.println("memberDto = " + memberDto);
         }
     }
+
     @Test
     public void findByConstruct() {
         List<MemberDto> result = queryFactory
@@ -572,6 +574,33 @@ public class QueryDslBasicTest {
         for (MemberDto memberDto : result) {
             System.out.println("memberDto = " + memberDto);
         }
+    }
+
+    @Test
+    public void dynamicQuery_BooleanBuilder() {
+        String usernameParam = "member1";
+        Integer ageParam = 10;
+
+        List<Member> result = searchMember1(usernameParam, ageParam);
+
+        assertEquals(1, result.size());
+    }
+
+    private List<Member> searchMember1(String usernameCond, Integer ageCond) {
+
+        BooleanBuilder builder = new BooleanBuilder();
+        if (usernameCond != null) {
+            builder.and(member.username.eq(usernameCond));
+        }
+
+        if (ageCond != null) {
+            builder.and(member.age.eq(ageCond));
+        }
+
+        return queryFactory
+                .selectFrom(member)
+                .where(builder)
+                .fetch();
     }
 
 }
