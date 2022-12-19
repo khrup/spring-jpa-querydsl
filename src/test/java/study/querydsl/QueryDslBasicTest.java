@@ -4,6 +4,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
@@ -566,7 +567,7 @@ public class QueryDslBasicTest {
     public void findDtoByQueryProjection() {
         List<MemberDto> result = queryFactory
                 //컴파일시점에 오류를 알수 있음. 좋은 설계방식(@QueryProjection 사용)
-                //@QueryProjection 에 의존하고 사용 된다는 단점이 있음.
+                //@QueryProjection 에 의존하고 사용 용다는 단점이 있음.
                 .select(new QMemberDto(member.username, member.age))
                 .from(member)
                 .fetch();
@@ -601,6 +602,42 @@ public class QueryDslBasicTest {
                 .selectFrom(member)
                 .where(builder)
                 .fetch();
+    }
+
+    @Test
+    public void dynamicQuery_WhereParam() {
+        String usernameParam = "member1";
+        Integer ageParam = 10;
+
+        List<Member> result = searchMember2(usernameParam, ageParam);
+
+        assertEquals(1, result.size());
+    }
+
+    //메소드를 통해 다른쿼리에서도 재활용이 가능하다.
+    //쿼리 자체의 가독성이 높아진다.
+    private List<Member> searchMember2(String usernameCond, Integer ageCond) {
+        return queryFactory
+                .selectFrom(member)
+                .where(allEq(usernameCond, ageCond))
+                //where 에 null 이 들어가면 무시된다
+                .fetch();
+    }
+
+    private BooleanExpression ageEq(Integer ageCond) {
+        return ageCond == null ? null : member.age.eq(ageCond);
+    }
+
+    private BooleanExpression usernameEq(String usernameCond) {
+        if (usernameCond == null) {
+            return null;
+        } else {
+            return member.username.eq(usernameCond);
+        }
+    }
+
+    private BooleanExpression allEq(String usernameCond, Integer ageCond) {
+        return usernameEq(usernameCond).and(ageEq(ageCond));
     }
 
 }
