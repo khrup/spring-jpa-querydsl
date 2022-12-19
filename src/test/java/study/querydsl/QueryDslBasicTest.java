@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import study.querydsl.dto.MemberDto;
+import study.querydsl.dto.QMemberDto;
 import study.querydsl.dto.UserDto;
 import study.querydsl.entity.Member;
 import study.querydsl.entity.QMember;
@@ -526,6 +527,7 @@ public class QueryDslBasicTest {
     public void findByConstruct() {
         List<MemberDto> result = queryFactory
                 //Projections.fields : 필드를 통해 값을 넣고 뺀다.
+                //런타임시점에 오류를 발견하여 별로 안좋음, 컴파일시점에 오류나는게 좋음
                 .select(Projections.constructor(MemberDto.class,
                         member.username,
                         member.age
@@ -554,6 +556,20 @@ public class QueryDslBasicTest {
                 .fetch();
 
         for (UserDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+    @Test
+    public void findDtoByQueryProjection() {
+        List<MemberDto> result = queryFactory
+                //컴파일시점에 오류를 알수 있음. 좋은 설계방식(@QueryProjection 사용)
+                //@QueryProjection 에 의존하고 사용 된다는 단점이 있음.
+                .select(new QMemberDto(member.username, member.age))
+                .from(member)
+                .fetch();
+
+        for (MemberDto memberDto : result) {
             System.out.println("memberDto = " + memberDto);
         }
     }
