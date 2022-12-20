@@ -13,6 +13,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Commit;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import study.querydsl.dto.MemberDto;
 import study.querydsl.dto.QMemberDto;
@@ -52,8 +54,8 @@ public class QueryDslBasicTest {
         Member member1 = new Member("member1", 10, teamA);
         Member member2 = new Member("member2", 20, teamA);
 
-        Member member3 = new Member("member3", 40, teamB);
-        Member member4 = new Member("member4", 10, teamB);
+        Member member3 = new Member("member3", 30, teamB);
+        Member member4 = new Member("member4", 40, teamB);
 
         em.persist(member1);
         em.persist(member2);
@@ -132,7 +134,7 @@ public class QueryDslBasicTest {
         List<Member> result = queryFactory
                 .selectFrom(member)
                 .orderBy(member.username.desc())
-                .offset(1) //0부터 시작
+                .offset(1) //0부터 시작(0은 1페이지 , 1은 2페이지다.)
                 .limit(2) //몇개 가져올 것인지
                 .fetch();
 
@@ -222,7 +224,7 @@ public class QueryDslBasicTest {
     }
 
     /**
-     * 세타조인
+     * 세타조인 : entity 끼리 매핑이 없을경우 사용
      * 회원의 이름이 팀 이름과 같은 회원 조회 , 단점 외부 조인이 안됨
      */
     @Test
@@ -638,6 +640,48 @@ public class QueryDslBasicTest {
 
     private BooleanExpression allEq(String usernameCond, Integer ageCond) {
         return usernameEq(usernameCond).and(ageEq(ageCond));
+    }
+
+    @Test
+    public void bulkUpdate() {
+
+        //쿼리 실행 되기 전
+        //member1 = 10 -> member1
+        //member2 = 20 -> member2
+        //member3 = 30 -> member3
+        //member4 = 40 -> member4
+        queryFactory
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(28))
+                .execute();
+
+
+        //쿼리 실행 되기 후
+        //영속성 컨텍스트 : member1 -> DB : 비회원
+        //영속성 컨텍스트 : member2 -> DB : 비회원
+        //영속성 컨텍스트 : member3 -> DB : member3
+        //영속성 컨텍스트 : member4 -> DB : member4
+
+
+        List<Member> result1 = queryFactory
+                .selectFrom(member)
+                .fetch();
+        for (Member member1 : result1) {
+            System.out.println("member1 = " + member1);
+        }
+
+        //해당 이슈를 해결하기 위한 방법 :
+        em.flush(); //영속성 컨텍스트에 있는 데이터를 DB 로 보낸다.
+        em.clear(); //영속성 컨텍스트 내용을 클리어한다.
+
+        List<Member> result2 = queryFactory
+                .selectFrom(member)
+                .fetch();
+        for (Member member2 : result2) {
+            System.out.println("member2 = " + member2);
+        }
+
     }
 
 }
