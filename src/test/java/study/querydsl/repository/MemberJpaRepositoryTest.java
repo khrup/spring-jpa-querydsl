@@ -83,7 +83,7 @@ class MemberJpaRepositoryTest {
 //        condition.setAgeGoe(35);
 //        condition.setAgeLoe(40);
 
-        List<MemberTeamDto> result = memberJpaRepository.searchByBuilder(condition);
+        List<MemberTeamDto> result = memberJpaRepository.search(condition);
         assertNotEquals(0, result.size());
 
     }
