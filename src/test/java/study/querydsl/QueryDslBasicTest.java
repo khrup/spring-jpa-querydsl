@@ -642,6 +642,8 @@ public class QueryDslBasicTest {
         return usernameEq(usernameCond).and(ageEq(ageCond));
     }
 
+    //대용량 삭제 및 수정은 영속성 컨텍스트를 거치지 않고 바로 DB에 접근하여 수정 및 삭제쿼리를 날린다.
+    //당연히 Transaction 이 끝나야 commit 이 날라가는건 같다.
     @Test
     public void bulkUpdate() {
 
@@ -656,14 +658,11 @@ public class QueryDslBasicTest {
                 .where(member.age.lt(28))
                 .execute();
 
-
         //쿼리 실행 되기 후
-        //영속성 컨텍스트 : member1 -> DB : 비회원
-        //영속성 컨텍스트 : member2 -> DB : 비회원
-        //영속성 컨텍스트 : member3 -> DB : member3
-        //영속성 컨텍스트 : member4 -> DB : member4
-
-
+        //영속성 컨텍스트 : member1 ,  DB : 비회원
+        //영속성 컨텍스트 : member2 ,  DB : 비회원
+        //영속성 컨텍스트 : member3 ,  DB : member3
+        //영속성 컨텍스트 : member4 ,  DB : member4
         List<Member> result1 = queryFactory
                 .selectFrom(member)
                 .fetch();
